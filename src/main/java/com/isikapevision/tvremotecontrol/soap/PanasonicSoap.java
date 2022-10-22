@@ -3,21 +3,30 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.soap.*;
 
-import static com.isikapevision.tvremotecontrol.util.Constants.PANASONIC_URN;
+import static com.isikapevision.tvremotecontrol.util.Constants.PANASONIC_URN_COMMAND;
+import static com.isikapevision.tvremotecontrol.util.Constants.PANASONIC_URN_RENDER;
 
 @Service
 public class PanasonicSoap {
 
-    private void createSoapEnvelope(SOAPMessage soapMessage, String command) throws SOAPException {
+    private void createSoapEnvelope(SOAPMessage soapMessage, String command, String soapAction) throws SOAPException {
         SOAPPart soapPart = soapMessage.getSOAPPart();
-        String namespace = "u";
-        String namespaceURN = PANASONIC_URN;
         // SOAP Envelope
         SOAPEnvelope envelope = soapPart.getEnvelope();
         // SOAP Body
         SOAPBody soapBody = envelope.getBody();
-        SOAPElement soapBodyElem = soapBody.addChildElement("X_SendKey", namespace, namespaceURN);
-        soapBodyElem.addChildElement("X_KeyEvent").addTextNode(command);
+        String namespace = "u";
+        if (soapAction.endsWith("SetVolume\"")){
+            String namespaceURN = PANASONIC_URN_RENDER;
+            SOAPElement soapBodyElem = soapBody.addChildElement("SetVolume", namespace, namespaceURN);
+            soapBodyElem.addChildElement("InstanceID").addTextNode("0");
+            soapBodyElem.addChildElement("Channel").addTextNode("Master");
+            soapBodyElem.addChildElement("DesiredVolume").addTextNode(command);
+        } else {
+            String namespaceURN = PANASONIC_URN_COMMAND;
+            SOAPElement soapBodyElem = soapBody.addChildElement("X_SendKey", namespace, namespaceURN);
+            soapBodyElem.addChildElement("X_KeyEvent").addTextNode(command);
+        }
     }
 
     public void callSoapWebService(String soapEndpointUrl, String soapAction, String command) {
@@ -45,7 +54,7 @@ public class PanasonicSoap {
         MessageFactory messageFactory = MessageFactory.newInstance();
         SOAPMessage soapMessage = messageFactory.createMessage();
 
-        createSoapEnvelope(soapMessage, command);
+        createSoapEnvelope(soapMessage, command, soapAction);
 
         MimeHeaders headers = soapMessage.getMimeHeaders();
         headers.addHeader("SOAPACTION", soapAction);

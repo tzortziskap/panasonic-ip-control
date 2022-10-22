@@ -8,9 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import static com.isikapevision.tvremotecontrol.util.Constants.*;
 
-
-import java.util.Arrays;
-
 @Service
 public class PanasonicServiceImpl implements PanasonicService {
 
@@ -28,8 +25,22 @@ public class PanasonicServiceImpl implements PanasonicService {
         PanasonicCommands panasonicCommands = PanasonicCommands.findByFriendlyCommand(friendlyCommand);
         if (panasonicCommands != null){
             String command = panasonicCommands.getCommand();
-            String endpoint = ipAddress.concat(":").concat(port).concat(PANASONIC_URL);
-            panasonicSoap.callSoapWebService(endpoint, PANASONIC_SOAP_ACTION, command);
+            String endpoint = ipAddress.concat(":").concat(port).concat(PANASONIC_URL_COMMAND);
+            panasonicSoap.callSoapWebService(endpoint, PANASONIC_SOAP_ACTION_COMMAND, command);
         }
+    }
+
+    @Override
+    public void sendVolumeRequest(String volume) {
+        try{
+            int vol = Integer.parseInt(volume);
+            if (vol >= 0 && vol <= 100){
+                String endpoint = ipAddress.concat(":").concat(port).concat(PANASONIC_URL_RENDER);
+                panasonicSoap.callSoapWebService(endpoint, PANASONIC_SOAP_ACTION_RENDER, volume);
+            }
+        }catch (Exception e) {
+            System.out.printf("Error " + e.getMessage());
+        }
+
     }
 }

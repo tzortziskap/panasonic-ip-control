@@ -23,4 +23,10 @@ public class PanasonicController {
         panasonicService.sendRequest(friendlyCommand);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping(PANASONIC_VOLUME_GET_MAPPING)
+    public ResponseEntity<String> volume(@PathVariable("volume") String volume) {
+        panasonicService.sendVolumeRequest(volume);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
